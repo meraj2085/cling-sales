@@ -10,3 +10,11 @@
   font-family: "Open Sans", sans-serif;
   scroll-behavior: smooth;
 }
+
+.even-row {
+  background-color: #fff;
+}
+
+.odd-row {
+  background-color: #f3f5f8;
+}
