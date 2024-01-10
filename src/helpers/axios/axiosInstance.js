@@ -41,4 +41,4 @@ instance.interceptors.response.use(
   }
 );
 
-module.exports = { instance };
+export { instance };
