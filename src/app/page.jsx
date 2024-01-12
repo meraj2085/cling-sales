@@ -3,10 +3,31 @@ import { Button } from "antd";
 import Link from "next/link";
 import { EyeOutlined } from "@ant-design/icons";
 import { useState } from "react";
+import { Checkbox, Divider, Col, Row, Flex } from 'antd';
 import { useDebounced } from "@/redux/hooks";
 import ADTable from "@/components/ui/ADTable";
 
+
+const CheckboxGroup = Checkbox.Group;
+const plainOptions = [''];
+const defaultCheckedList = [''];
+
+const onChange = (e) => {
+  console.log(`checked = ${e.target.checked}`);
+};
+
 const Home = () => {
+
+  const [checkedList, setCheckedList] = useState(defaultCheckedList);
+  const checkAll = plainOptions.length === checkedList.length;
+  const indeterminate = checkedList.length > 0 && checkedList.length < plainOptions.length;
+  const onChange1 = (list) => {
+    setCheckedList(list);
+  };
+  const onCheckAllChange = (e) => {
+    setCheckedList(e.target.checked ? plainOptions : []);
+  };
+
   const query = {};
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
@@ -141,9 +162,16 @@ const Home = () => {
       render: function (data) {
         return (
           <>
-            <Link href={`view/${data}`}>
+          
+            {/* <Link href={`view/${data}`}>
               <Button icon={<EyeOutlined />}>View</Button>
-            </Link>
+            </Link> */}
+            {/* <Checkbox onChange={onChange}></Checkbox> */}
+            
+
+    <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange1} />
+    
+        
           </>
         );
       },
@@ -161,9 +189,21 @@ const Home = () => {
     setSortOrder(order === "ascend" ? "asc" : "desc");
   };
 
+  
+
   return (
+    
     <div style={{ overflowX: "auto" }} className="flex justify-center my-10">
       <div className="bg-gray-200 min-w-[900px] p-4 rounded-md">
+      
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Button type="primary" >Primary Button</Button>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <Button type="primary" style={{backgroundColor:'green'}}>Send What'sApp</Button>
+      <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}> Check all </Checkbox> 
+      </div>
+    </div>
+      
         <ADTable
           loading={isLoading}
           columns={columns}
@@ -176,6 +216,7 @@ const Home = () => {
           showPagination={true}
           scroll={{ x: true }}
         />
+        
       </div>
     </div>
   );
