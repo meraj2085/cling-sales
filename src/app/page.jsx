@@ -1,53 +1,33 @@
 "use client";
 import { Button } from "antd";
-import Link from "next/link";
-import { EyeOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import { Checkbox, Divider, Col, Row, Flex } from 'antd';
-import { useDebounced } from "@/redux/hooks";
+import { Checkbox } from "antd";
 import ADTable from "@/components/ui/ADTable";
 
-
-const CheckboxGroup = Checkbox.Group;
-const plainOptions = [''];
-const defaultCheckedList = [''];
-
-const onChange = (e) => {
-  console.log(`checked = ${e.target.checked}`);
-};
-
 const Home = () => {
+  const [arr, setArr] = useState([]);
 
-  const [checkedList, setCheckedList] = useState(defaultCheckedList);
-  const checkAll = plainOptions.length === checkedList.length;
-  const indeterminate = checkedList.length > 0 && checkedList.length < plainOptions.length;
-  const onChange1 = (list) => {
-    setCheckedList(list);
+  const onBoxChange = (value) => {
+    if (arr.includes(value)) {
+      setArr(arr.filter((item) => item !== value));
+    } else {
+      setArr([...arr, value]);
+    }
   };
-  const onCheckAllChange = (e) => {
-    setCheckedList(e.target.checked ? plainOptions : []);
+
+  const handleSelectAll = () => {
+    if (arr.length === data.length) {
+      setArr([]);
+      return;
+    }
+    setArr(data.map((item) => item.id));
   };
 
-  const query = {};
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
-  const [sortBy, setSortBy] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const handleSendWhatsApp = (numbers) => {
+    console.log("SendWhatsapp", numbers);
+  };
 
-  query["limit"] = size;
-  query["page"] = page;
-  query["sortBy"] = sortBy;
-  query["sortOrder"] = sortOrder;
-
-  const debouncedSearchTerm = useDebounced({
-    searchQuery: searchTerm,
-    delay: 600,
-  });
-
-  if (!!debouncedSearchTerm) {
-    query["searchTerm"] = debouncedSearchTerm;
-  }
+  console.log("On Change", arr);
 
   const data = [
     {
@@ -133,7 +113,6 @@ const Home = () => {
   ];
 
   const isLoading = false;
-  const meta = data?.meta;
 
   const columns = [
     {
@@ -161,62 +140,48 @@ const Home = () => {
       dataIndex: "id",
       render: function (data) {
         return (
-          <>
-          
-            {/* <Link href={`view/${data}`}>
-              <Button icon={<EyeOutlined />}>View</Button>
-            </Link> */}
-            {/* <Checkbox onChange={onChange}></Checkbox> */}
-            
-
-    <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange1} />
-    
-        
-          </>
+          <Checkbox
+            onChange={(e) => onBoxChange(e.target.value)}
+            value={data}
+            checked={arr.includes(data)}
+          />
         );
       },
     },
   ];
 
-  const onPaginationChange = (page, pageSize) => {
-    setPage(page);
-    setSize(pageSize);
-  };
-
-  const onTableChange = (pagination, filter, sorter) => {
-    const { order, field } = sorter;
-    setSortBy(field);
-    setSortOrder(order === "ascend" ? "asc" : "desc");
-  };
-
-  
-
   return (
-    
     <div style={{ overflowX: "auto" }} className="flex justify-center my-10">
       <div className="bg-gray-200 min-w-[900px] p-4 rounded-md">
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-      <Button type="primary" >Primary Button</Button>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <Button type="primary" style={{backgroundColor:'green'}}>Send What'sApp</Button>
-      <Checkbox indeterminate={indeterminate} onChange={onCheckAllChange} checked={checkAll}> Check all </Checkbox> 
-      </div>
-    </div>
-      
+        <div
+          style={{ display: "flex", justifyContent: "space-between" }}
+          className="mb-5"
+        >
+          <Button onClick={() => handleSelectAll()} type="primary">
+            {arr.length === data.length ? "Deselect All" : "Select All"}
+          </Button>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <Button
+              onClick={() => {
+                handleSendWhatsApp(arr);
+              }}
+              disabled={arr.length === 0}
+              type="primary"
+              style={{ backgroundColor: "green" }}
+            >
+              Send WhatsApp
+            </Button>
+          </div>
+        </div>
+
         <ADTable
           loading={isLoading}
           columns={columns}
           dataSource={data}
-          pageSize={size}
-          totalPages={meta?.total}
           showSizeChanger={true}
-          onPaginationChange={onPaginationChange}
-          onTableChange={onTableChange}
           showPagination={true}
           scroll={{ x: true }}
         />
-        
       </div>
     </div>
   );
