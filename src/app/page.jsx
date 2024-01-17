@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "antd";
 import { useState } from "react";
-import { Checkbox } from "antd";
+import { Checkbox, Modal } from "antd";
 import ADTable from "@/components/ui/ADTable";
 import { useGetAllLeadsQuery } from "@/redux/api/leadsApi";
-
+import Navbar from "./Navbar"
 const Home = () => {
   const query = {};
   const [page, setPage] = useState(1);
@@ -39,6 +39,26 @@ const Home = () => {
     console.log("SendWhatsapp", numbers);
   };
 
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const showModal = () => {
+    setOpen(true);
+  };
+  const handleOk = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setOpen(false);
+    }, 3000);
+  };
+  const handleCancel = () => {
+    setOpen(false);
+  };
+  const handleSend=()=>{
+    handleSendWhatsApp(arr)
+  }
+
+
   const { data, isLoading } = useGetAllLeadsQuery({ ...query });
   const meta = data?.meta;
 
@@ -63,13 +83,26 @@ const Home = () => {
       dataIndex: "user_state",
     },
 
-    {
-      title: "Country",
-      dataIndex: "country",
-    },
+    // {
+    //   title: "Country",
+    //   dataIndex: "user_country",
+    // },
     {
       title: "Requirement",
       dataIndex: "user_requirement",
+      render: function (data) {
+        if(data){
+          let words = data.split(" ");
+          let result = words.length > 2 ? words.slice(0, 2).join(" ") : data;
+          // console.log(result+"...")
+          result=result+"..."
+          return<h1>{result}</h1>
+        }
+        else{
+          return <h1>{data ? data : "N/A"}</h1>;
+        }
+        
+      },
     },
     {
       title: "Date and time",
@@ -91,7 +124,10 @@ const Home = () => {
   ];
 
   return (
+    <>
+    <Navbar/>
     <div style={{ overflowX: "auto" }} className="flex justify-center my-10">
+
       <div className="bg-gray-200 min-w-[900px] p-4 rounded-md">
         <div
           style={{ display: "flex", justifyContent: "space-between" }}
@@ -103,16 +139,39 @@ const Home = () => {
           <div style={{ display: "flex", flexDirection: "column" }}>
             <Button
               onClick={() => {
-                handleSendWhatsApp(arr);
+                showModal();
+                // handleSendWhatsApp(arr);
               }}
+              // onClick={showModal}
               disabled={arr.length === 0}
               type="primary"
               style={{ backgroundColor: "green" }}
             >
               Send WhatsApp
             </Button>
+            
           </div>
         </div>
+        <Modal
+        open={open}
+        title="WhatsApp Message"
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" loading={loading} onClick={
+            // handleOk
+           handleSend
+           }>
+            Send message
+          </Button>,
+         
+        ]}
+      >
+        <h1>Are you sure you want to submit?</h1>
+      </Modal>
 
         <ADTable
           loading={isLoading}
@@ -127,6 +186,7 @@ const Home = () => {
         />
       </div>
     </div>
+    </>
   );
 };
 
