@@ -50,6 +50,9 @@ const Home = () => {
     {
       title: "Area",
       dataIndex: "user_area",
+      render: function (data) {
+        return <h1>{data ? data : "N/A"}</h1>;
+      },
     },
     {
       title: "City",
@@ -59,19 +62,19 @@ const Home = () => {
       title: "State",
       dataIndex: "user_state",
     },
-    
+
     {
       title: "Country",
       dataIndex: "country",
     },
     {
       title: "Requirement",
-      dataIndex: "requirement",
+      dataIndex: "user_requirement",
     },
     {
       title: "Date and time",
       dataIndex: "search_date_and_time",
-    },
+    },
     {
       title: "Action",
       dataIndex: "_id",
