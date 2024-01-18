@@ -44,8 +44,12 @@ const Home = () => {
 
   const columns = [
     {
-      title: "Mobile",
+      title: "Phone",
       dataIndex: "user_phone",
+    },
+    {
+      title: "Area",
+      dataIndex: "user_area",
     },
     {
       title: "City",
@@ -55,6 +59,7 @@ const Home = () => {
       title: "State",
       dataIndex: "user_state",
     },
+    
     {
       title: "Country",
       dataIndex: "country",
@@ -63,6 +68,10 @@ const Home = () => {
       title: "Requirement",
       dataIndex: "requirement",
     },
+    {
+      title: "Date and time",
+      dataIndex: "search_date_and_time",
+    },
     {
       title: "Action",
       dataIndex: "_id",
