@@ -20,9 +20,15 @@ export const leadsApi = baseApi.injectEndpoints({
       },
       providesTags: [tagTypes.leads],
     }),
+    updateLead: build.mutation({
+      query: (data) => ({
+        url: `${LEADS_URL}/${data.id}`,
+        method: "PATCH",
+        data: data.body,
+      }),
+      invalidatesTags: [tagTypes.leads],
+    }),
   }),
 });
 
-export const {
-  useGetAllLeadsQuery,
-} = leadsApi;
+export const { useGetAllLeadsQuery, useUpdateLeadMutation } = leadsApi;

@@ -3,13 +3,19 @@ import { Button, message } from "antd";
 import { useState } from "react";
 import { Checkbox } from "antd";
 import ADTable from "@/components/ui/ADTable";
-import { useGetAllLeadsQuery } from "@/redux/api/leadsApi";
+import {
+  useGetAllLeadsQuery,
+  useUpdateLeadMutation,
+} from "@/redux/api/leadsApi";
 import Navbar from "./Navbar";
 import CSModal from "@/components/ui/Modal";
 import { Input } from "antd";
+import Loading from "./loading";
 const { TextArea } = Input;
 
 const Home = () => {
+  const [updateLead, { isLoading: isUpdateLoading }] = useUpdateLeadMutation();
+  const [id, setId] = useState("");
   const query = {};
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -50,10 +56,18 @@ const Home = () => {
     setOpen(false);
   };
 
-  const onEditSubmit = (data) => {
-    console.log(data);
-    message.success("Successfully");
-    setEditOpen(false);
+  const onEditSubmit = async (data) => {
+    const { status, id } = data;
+    try {
+      const res = await updateLead({ id, body: { status } }).unwrap();
+      if (res._id) {
+        message.success("Status updated Successfully");
+        setEditOpen(false);
+      }
+    } catch (err) {
+      message.error(err.message);
+      setEditOpen(false);
+    }
   };
 
   const { data, isLoading } = useGetAllLeadsQuery({ ...query });
@@ -134,6 +148,7 @@ const Home = () => {
               }}
               onClick={() => {
                 setEditOpen(true);
+                setId(data);
               }}
             >
               Edit
@@ -143,6 +158,8 @@ const Home = () => {
       },
     },
   ];
+
+  if (isUpdateLoading) return <Loading />;
 
   return (
     <>
@@ -194,12 +211,15 @@ const Home = () => {
         title="Edit Status"
         isOpen={editOpen}
         closeModal={() => setEditOpen(false)}
-        handleOk={() => onEditSubmit(textAreaData)}
+        handleOk={() => onEditSubmit({ status: textAreaData, id: id })}
       >
         <div className="pb-10">
           <TextArea
             showCount
             maxLength={100}
+            defaultValue={
+              data?.leads?.find((item) => item._id === id)?.status || ""
+            }
             onChange={(e) => {
               setTextAreaData(e.target.value);
             }}
