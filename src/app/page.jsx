@@ -1,11 +1,13 @@
 "use client";
 import { Button, message } from "antd";
 import { useState } from "react";
-import { Checkbox, Modal } from "antd";
+import { Checkbox } from "antd";
 import ADTable from "@/components/ui/ADTable";
 import { useGetAllLeadsQuery } from "@/redux/api/leadsApi";
 import Navbar from "./Navbar";
 import CSModal from "@/components/ui/Modal";
+import { Input } from "antd";
+const { TextArea } = Input;
 
 const Home = () => {
   const query = {};
@@ -20,6 +22,7 @@ const Home = () => {
   };
 
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [arr, setArr] = useState([]);
 
   const onBoxChange = (value) => {
@@ -29,6 +32,8 @@ const Home = () => {
       setArr([...arr, value]);
     }
   };
+
+  const [textAreaData, setTextAreaData] = useState("");
 
   const handleSelectAll = () => {
     if (arr.length === data?.leads?.length) {
@@ -43,6 +48,12 @@ const Home = () => {
     setArr([]);
     message.success("WhatsApp message sent successfully");
     setOpen(false);
+  };
+
+  const onEditSubmit = (data) => {
+    console.log(data);
+    message.success("Successfully");
+    setEditOpen(false);
   };
 
   const { data, isLoading } = useGetAllLeadsQuery({ ...query });
@@ -121,6 +132,9 @@ const Home = () => {
                 margin: "0px 5px",
                 marginLeft: "20px",
               }}
+              onClick={() => {
+                setEditOpen(true);
+              }}
             >
               Edit
             </Button>
@@ -175,6 +189,24 @@ const Home = () => {
         handleOk={() => handleSendWhatsApp(arr)}
       >
         <p className="my-5">Are you sure?</p>
+      </CSModal>
+      <CSModal
+        title="Edit Status"
+        isOpen={editOpen}
+        closeModal={() => setEditOpen(false)}
+        handleOk={() => onEditSubmit(textAreaData)}
+      >
+        <div className="pb-10">
+          <TextArea
+            showCount
+            maxLength={100}
+            onChange={(e) => {
+              setTextAreaData(e.target.value);
+            }}
+            placeholder="Edit Status"
+            style={{ height: 120, resize: "none" }}
+          />
+        </div>
       </CSModal>
     </>
   );
