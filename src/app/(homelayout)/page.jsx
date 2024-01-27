@@ -7,10 +7,11 @@ import {
   useGetAllLeadsQuery,
   useUpdateLeadMutation,
 } from "@/redux/api/leadsApi";
-import Navbar from "./Navbar";
+import Navbar from "../../components/Navbar";
 import CSModal from "@/components/ui/Modal";
 import { Input } from "antd";
-import Loading from "./loading";
+import Loading from "../loading";
+import { set } from "react-hook-form";
 const { TextArea } = Input;
 
 const Home = () => {
@@ -19,6 +20,7 @@ const Home = () => {
   const query = {};
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [loading, setLoading] = useState(false);
   query["page"] = page;
   query["limit"] = limit;
 
@@ -32,28 +34,78 @@ const Home = () => {
   const [arr, setArr] = useState([]);
 
   const onBoxChange = (value) => {
-    if (arr.includes(value)) {
-      setArr(arr.filter((item) => item !== value));
+    if (arr?.includes(value)) {
+      setArr(arr?.filter((item) => item !== value));
     } else {
       setArr([...arr, value]);
     }
   };
 
+  const generateWhatsAppRequestData = (numbers) => {
+    const requestData = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer EAArI6pUax04BO6tRJ0PC3RAdMZAAmE2qDKp45ZBRVGVpvA4EQvhZA7zNE0NzYXYgNrcifRoZBh6rI1Y6hZCYG1OWpfkwpVAbdPil2aLHfbUDQVPnPjT7qXZBzGsGFwwsBwpsq6XzsRU60IeIQRdyQ4lqdYXjoEDZCwEhGGc4NYkWN3T2wiLUuQ0HwToLkCL1ZAsd`,
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        // to: numbers.join(","),
+        to: "8801624959145",
+        type: "template",
+        template: {
+          name: "hello_world",
+          language: {
+            code: "en_US",
+          },
+        },
+      }),
+    };
+
+    return requestData;
+  };
+
   const [textAreaData, setTextAreaData] = useState("");
+  const [messageData, setMessageData] = useState("");
 
   const handleSelectAll = () => {
-    if (arr.length === data?.leads?.length) {
+    if (arr?.length === data?.leads?.length) {
       setArr([]);
       return;
     }
-    setArr(data?.leads?.map((item) => item._id));
+    setArr(data?.leads?.map((item) => item.user_phone));
   };
 
-  const handleSendWhatsApp = (numbers) => {
-    console.log("SendWhatsapp", numbers);
+  const handleSendWhatsApp = async (numbers) => {
+    if (!messageData.trim()) {
+      message.error("Please enter a WhatsApp message before sending.");
+      return;
+    }
+    setLoading(true);
+    const data = { numbers, message: messageData };
+    const whatsappRequestData = generateWhatsAppRequestData(numbers);
+
+    try {
+      const url = "https://graph.facebook.com/v18.0/218978457961450/messages";
+      const response = await fetch(url, whatsappRequestData);
+
+      if (response.ok) {
+        console.log("SendWhatsapp", { numbers, message: messageData });
+        setArr([]);
+        message.success("WhatsApp message sent successfully");
+        setOpen(false);
+      } else {
+        console.error("Failed to send WhatsApp message. Please try again.");
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error sending WhatsApp message:", error);
+      message.error("Failed to send WhatsApp message");
+      setLoading(false);
+    }
     setArr([]);
-    message.success("WhatsApp message sent successfully");
     setOpen(false);
+    setLoading(false);
   };
 
   const onEditSubmit = async (data) => {
@@ -131,29 +183,34 @@ const Home = () => {
       },
     },
     {
+      dataIndex: "user_phone",
+      render: function (data) {
+        return (
+          <Checkbox
+            onChange={(e) => onBoxChange(e.target.value)}
+            value={data}
+            checked={arr.includes(data)}
+          />
+        );
+      },
+    },
+    {
       title: "Action",
       dataIndex: "_id",
       render: function (data) {
         return (
-          <>
-            <Checkbox
-              onChange={(e) => onBoxChange(e.target.value)}
-              value={data}
-              checked={arr.includes(data)}
-            />
-            <Button
-              style={{
-                margin: "0px 5px",
-                marginLeft: "20px",
-              }}
-              onClick={() => {
-                setEditOpen(true);
-                setId(data);
-              }}
-            >
-              Edit
-            </Button>
-          </>
+          <Button
+            style={{
+              margin: "0px 5px",
+              marginLeft: "20px",
+            }}
+            onClick={() => {
+              setEditOpen(true);
+              setId(data);
+            }}
+          >
+            Edit
+          </Button>
         );
       },
     },
@@ -163,7 +220,6 @@ const Home = () => {
 
   return (
     <>
-      <Navbar />
       <div style={{ overflowX: "auto" }} className="flex justify-center my-10">
         <div className="bg-gray-200 min-w-[900px] p-4 rounded-md">
           <div
@@ -205,7 +261,18 @@ const Home = () => {
         closeModal={() => setOpen(false)}
         handleOk={() => handleSendWhatsApp(arr)}
       >
-        <p className="my-5">Are you sure?</p>
+        <div className="pb-10">
+          <TextArea
+            showCount
+            maxLength={100}
+            onChange={(e) => {
+              setMessageData(e.target.value);
+            }}
+            required
+            placeholder="Enter Message"
+            style={{ height: 120, resize: "none" }}
+          />
+        </div>
       </CSModal>
       <CSModal
         title="Edit Status"

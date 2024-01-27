@@ -3,16 +3,16 @@ import { message } from "antd";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Form from "@/components/Forms/Form";
 import FormInput from "@/components/Forms/FormInput";
-import { useUserLoginMutation } from "@/redux/api/authApi";
+import { useUserLoginMutation } from "@/redux/api/usersApi";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { loginSchema } from "@/schema/loginSchema";
 import Loading from "@/app/loading";
+import { storeUserInfo } from "@/utils/authService";
 
 const LoginPage = () => {
-  const [userLogin, { isLoading: loading }] = useUserLoginMutation();
+  const [userLogin, { isLoading }] = useUserLoginMutation();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
 
   const [defaultValues, setDefaultValues] = useState({
     email: "",
@@ -21,18 +21,19 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      setIsLoading(true);
       const res = await userLogin({ ...data }).unwrap();
-      message.success("User logged in successfully!");
-      setIsLoading(false);
+      if (res?.accessToken) {
+        message.success("User logged in successfully!");
+        router.push("/");
+        storeUserInfo({ accessToken: res?.accessToken });
+      }
     } catch (err) {
-      setIsLoading(false);
       console.error(err.message);
       message.error(err.message);
     }
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return <Loading />;
   }
 
@@ -87,18 +88,9 @@ const LoginPage = () => {
                   type="submit"
                   className="px-8 py-3 font-semibold rounded bg-gray-800 text-gray-100"
                 >
-                  Basic
+                  Login
                 </button>
               </div>
-              <p className="px-6 text-sm text-center text-gray-400">
-                Dont have an account yet?{" "}
-                <button
-                  type="submit"
-                  className="hover:underline text-violet-400"
-                >
-                  Sign up
-                </button>
-              </p>
             </div>
           </Form>
         </div>
